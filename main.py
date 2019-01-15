@@ -183,41 +183,41 @@ if __name__ == "__main__":
                     if isDebug:
                         print_log("protocol = " + protocol)
 
-                    if decodeArray[i][5].find("protoparam") == -1:
+                    if decodeArray[i][5].find("protoparam") == -1 or len(re.findall(r"protoparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])) == 0:
                         protocol_param = ""
                     else:
                         protocol_param = base64.urlsafe_b64decode(
-                            decodeArray[i][5].split("&")[1].lstrip("protoparam")).decode("utf-8")
+                            re.findall(r"protoparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]).decode("utf-8")
                     if isDebug:
                         print_log("protocol_param = " + protocol_param)
                     obfs = decodeArray[i][4]
                     if isDebug:
                         print_log("obfs = " + obfs)
-                    if decodeArray[i][5].find("obfsparam") == -1:
+                    if decodeArray[i][5].find("obfsparam") == -1 or len(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])) == 0:
                         obfs_param = ""
                     else:
                         obfs_param = base64.urlsafe_b64decode(
-                            str(re.findall(r"obfsparam=([a-zA-Z0-9]+)&", decodeArray[i][5])[0]) + "=" * ((4 - len(
-                                str(re.findall(r"obfsparam=([a-zA-Z0-9]+)&", decodeArray[i][5])[0]))) % 4)).decode(
+                            str(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]) + "=" * ((4 - len(
+                                str(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]))) % 4)).decode(
                             "utf-8")
                     if isDebug:
                         print_log("obfs_param = " + obfs_param)
 
-                    if decodeArray[i][5].find("remarks") == -1:
+                    if decodeArray[i][5].find("remarks") == -1 or len(re.findall(r"remarks=([a-zA-Z0-9\\\-.:\s]+)", decodeArray[i][5])) == 0:
                         remarks = ""
                     else:
                         remarks = base64.urlsafe_b64decode(
-                            re.findall(r"remarks=([a-zA-Z0-9\\\-]+)", decodeArray[i][5])[0] + "=" * (4 - len(
-                                str(re.findall(r"remarks=([a-zA-Z0-9\\\-]+)", decodeArray[i][5])[0])) % 4)).decode(
+                            re.findall(r"remarks=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0] + "=" * (4 - len(
+                                str(re.findall(r"remarks=([a-zA-Z0-9\\\-\.\s\_]+)", decodeArray[i][5])[0])) % 4)).decode(
                             "utf-8")
                     if isDebug:
                         print_log("remarks = " + remarks)
-                    if decodeArray[i][5].find("group") == -1:
+                    if decodeArray[i][5].find("group") == -1 or len(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])) == 0:
                         group = ""
                     else:
                         group = base64.urlsafe_b64decode(
-                            str(re.findall(r"group=([a-zA-Z0-9\\\-]+)", decodeArray[i][5])[0]) + "=" * ((4 - (len(
-                                str(re.findall(r"group=([a-zA-Z0-9\\\-]+)", decodeArray[i][5])[0])) % 4)) % 4)).decode(
+                            str(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0]) + "=" * ((4 - (len(
+                                str(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0])) % 4)) % 4)).decode(
                             "utf-8")
                     if isDebug:
                         print_log("group = " + group)
