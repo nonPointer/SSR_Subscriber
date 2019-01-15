@@ -145,7 +145,7 @@ if __name__ == "__main__":
             decodeArray = decodeText.split('\n')
 
             for i in range(len(decodeArray)):
-                decodeArray[i] = str(decodeArray[i].replace("ssr://", "", 1))
+                decodeArray[i] = str(decodeArray[i].replace("ssr://", "", 1)).strip()
 
             for i in range(len(decodeArray)):
                 # ignore blank line
