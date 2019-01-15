@@ -27,6 +27,10 @@ config_file = "config.json"
 # User-Agent
 userAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6"
 
+# Keywords
+# use ',' to split
+keywords = ""
+
 # Local Port
 local_port = 1080
 
@@ -108,6 +112,11 @@ def print_log(content):
 
 
 if __name__ == "__main__":
+    keywords = keywords.split(',')
+    for i in range(len(keywords)):
+        keywords[i] = keywords[i].strip()
+    print_log("Apply filters: " + str(keywords))
+
     headers = {
         "User-Agent": userAgent
     }
@@ -215,9 +224,15 @@ if __name__ == "__main__":
 
                     server = Server(server, server_port, password, method, protocol, protocol_param, obfs, obfs_param)
                     # print(server.toJSON())
-                    servers.append(server)
 
-                    print_log("Loaded server #" + str(i) + " " + remarks)
+                    for j in range(len(keywords)):
+                        if not remarks.find(keywords[j]) == -1:
+                            servers.append(server)
+                            print_log("Loaded server #" + str(i) + " " + remarks)
+                            break
+
+                    if not server in servers:
+                        print_log("Reject server [" + remarks + "]")
                 except:
                     traceback.print_exc()
                     print_log("#" + str(i) + " server resolved failed.")
