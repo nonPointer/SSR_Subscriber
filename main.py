@@ -29,6 +29,7 @@ userAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/2
 
 # Keywords
 # use ',' to split
+enable_filter = False
 keywords = ""
 
 # Local Port
@@ -112,10 +113,11 @@ def print_log(content):
 
 
 if __name__ == "__main__":
-    keywords = keywords.split(',')
-    for i in range(len(keywords)):
-        keywords[i] = keywords[i].strip()
-    print_log("Apply filters: " + str(keywords))
+    if enable_filter:
+        keywords = keywords.split(',')
+        for i in range(len(keywords)):
+            keywords[i] = keywords[i].strip()
+        print_log("Apply filters: " + str(keywords))
 
     headers = {
         "User-Agent": userAgent
@@ -225,14 +227,18 @@ if __name__ == "__main__":
                     server = Server(server, server_port, password, method, protocol, protocol_param, obfs, obfs_param)
                     # print(server.toJSON())
 
-                    for j in range(len(keywords)):
-                        if not remarks.find(keywords[j]) == -1:
-                            servers.append(server)
-                            print_log("Loaded server #" + str(i) + " " + remarks)
-                            break
+                    if enable_filter:
+                        for j in range(len(keywords)):
+                            if not remarks.find(keywords[j]) == -1:
+                                servers.append(server)
+                                print_log("Loaded server #" + str(i) + " [" + remarks + "]")
+                                break
 
-                    if not server in servers:
-                        print_log("Reject server [" + remarks + "]")
+                        if not server in servers:
+                            print_log("Reject server [" + remarks + "]")
+                    else:
+                        servers.append(server)
+                        print_log("Loaded server #" + str(i) + " " + remarks)
                 except:
                     traceback.print_exc()
                     print_log("#" + str(i) + " server resolved failed.")
