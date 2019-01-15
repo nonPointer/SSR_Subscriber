@@ -124,6 +124,7 @@ if __name__ == "__main__":
     }
     while (True):
         servers = []
+        loaded_counter = 0
         try:
             if not isDebug:
                 # fetch data
@@ -231,14 +232,16 @@ if __name__ == "__main__":
                         for j in range(len(keywords)):
                             if not remarks.find(keywords[j]) == -1:
                                 servers.append(server)
-                                print_log("Loaded server #" + str(i) + " [" + remarks + "]")
+                                print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
+                                loaded_counter += 1
                                 break
 
                         if not server in servers:
-                            print_log("Reject server [" + remarks + "]")
+                            print_log("Reject server \t [" + remarks + "]")
                     else:
                         servers.append(server)
-                        print_log("Loaded server #" + str(i) + " " + remarks)
+                        print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
+                        loaded_counter += 1
                 except:
                     traceback.print_exc()
                     print_log("#" + str(i) + " server resolved failed.")
