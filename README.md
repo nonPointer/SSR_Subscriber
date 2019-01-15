@@ -4,13 +4,10 @@
 
 ## TODO
 
-[ ] Add multi-subscribe links 
-
-[ ] Test connection intervals
-
-[ ] Save config files depends on keywords (e.g. `HK`, `JP`, `Netflix`, `HBO`)
-
-[ ] Clean outdated config files
++ [ ] Add multi-subscribe links 
++ [ ] Test connection intervals
++ [ ] Save config files depends on keywords (e.g. `HK`, `JP`, `Netflix`, `HBO`)
++ [ ] Clean outdated config files
 
 # English
 
