@@ -19,7 +19,10 @@ import re
 updateInterval = 1800
 
 # Subscribe Address
-subscribeAddress = "https://raw.githubusercontent.com/erguotou520/electron-ssr/redesign/docs/assets/subscribe.txt"
+# Format: [["config_file_prefix1", "subscribe_address1"], ["config_file_prefix2", "subscribe_address2"]]
+subscription = [["test", "https://raw.githubusercontent.com/erguotou520/electron-ssr/redesign/docs/assets/subscribe.txt"],
+              ["config_file_prefix1", "https://subscribe_address1"],
+              ["config_file_prefix2", "https://subscribe_address2"]]
 
 # Config File
 config_file = "config.json"
@@ -67,8 +70,14 @@ exportLog = False
 # Log Export File
 exportLogfile = ""
 
+# Show error traceback
+showTraceback = False
+
 # Debug Switch
 isDebug = False
+
+# Request timeout
+request_timeout = 4
 
 
 class Server:
@@ -123,139 +132,141 @@ if __name__ == "__main__":
         "User-Agent": userAgent
     }
     while (True):
-        servers = []
         loaded_counter = 0
-        try:
-            if not isDebug:
-                # fetch data
-                subscribeContent = requests.get(subscribeAddress, headers=headers)
+        for k in range(len(subscription)):
+            try:
+                servers = []
+                subscribeAddress = subscription[k][1]
+                if not isDebug:
+                    # fetch data
+                    subscribeContent = requests.get(subscribeAddress, headers=headers, timeout=request_timeout)
+
+                    # convert data type
+                    encodeContent = str(subscribeContent.text).strip()
+                else:
+                    encodeContent = "c3NyOi8vTVRJM0xqQXVNQzR4T2pFeU16UTZZWFYwYUY5aFpYTXhNamhmYldRMU9tRmxjeTB4TWpndFkyWmlP" \
+                                    "blJzY3pFdU1sOTBhV05yWlhSZllYVjBhRHBaVjBab1dXMUthUzhfYjJKbWMzQmhjbUZ0UFZsdVNteFpWM1F6" \
+                                    "V1ZSRmVFeHRNWFphVVNaeVpXMWhjbXR6UFRWeVYwdzJTeTFXTlV4cGREVndZVWdtWjNKdmRYQTlaRWRXZW1S" \
+                                    "Qg0Kc3NyOi8vTVRreUxqRTJPQzR4TURBdU1UbzRPRGc0T205eWFXZHBianBoWlhNdE1qVTJMV05tWWpwd2JH" \
+                                    "RnBianBrUjFaNlpFRXZQMmR5YjNWd1BXUkhWbnBrUVE"
+
+                decodeContent = base64.urlsafe_b64decode(encodeContent + "=" * ((4 - len(encodeContent) % 4) % 4))
 
                 # convert data type
-                encodeContent = str(subscribeContent.text).strip()
-            else:
-                encodeContent = "c3NyOi8vTVRJM0xqQXVNQzR4T2pFeU16UTZZWFYwYUY5aFpYTXhNamhmYldRMU9tRmxjeTB4TWpndFkyWmlP" \
-                                "blJzY3pFdU1sOTBhV05yWlhSZllYVjBhRHBaVjBab1dXMUthUzhfYjJKbWMzQmhjbUZ0UFZsdVNteFpWM1F6" \
-                                "V1ZSRmVFeHRNWFphVVNaeVpXMWhjbXR6UFRWeVYwdzJTeTFXTlV4cGREVndZVWdtWjNKdmRYQTlaRWRXZW1S" \
-                                "Qg0Kc3NyOi8vTVRreUxqRTJPQzR4TURBdU1UbzRPRGc0T205eWFXZHBianBoWlhNdE1qVTJMV05tWWpwd2JH" \
-                                "RnBianBrUjFaNlpFRXZQMmR5YjNWd1BXUkhWbnBrUVE"
+                decodeText = decodeContent.decode("ascii")
 
-            decodeContent = base64.urlsafe_b64decode(encodeContent + "=" * ((4 - len(encodeContent) % 4) % 4))
+                # split data
+                decodeArray = decodeText.split('\n')
 
-            # convert data type
-            decodeText = decodeContent.decode("ascii")
+                for i in range(len(decodeArray)):
+                    decodeArray[i] = str(decodeArray[i].replace("ssr://", "", 1)).strip()
 
-            # split data
-            decodeArray = decodeText.split('\n')
+                for i in range(len(decodeArray)):
+                    # ignore blank line
+                    if len(decodeArray[i]) == 0:
+                        continue
 
-            for i in range(len(decodeArray)):
-                decodeArray[i] = str(decodeArray[i].replace("ssr://", "", 1)).strip()
+                    try:
+                        decodeArray[i] += (((4 - len(decodeArray[i]) % 4)) % 4) * "="
+                        if isDebug:
+                            print_log(decodeArray[i])
+                            print_log(base64.urlsafe_b64decode(decodeArray[i].encode("utf-8")).decode("utf-8"))
+                        decodeArray[i] = base64.urlsafe_b64decode(decodeArray[i].encode("utf-8")).decode("utf-8").split(":")
+                    except:
+                        traceback.print_exc()
+                        continue
 
-            for i in range(len(decodeArray)):
-                # ignore blank line
-                if len(decodeArray[i]) == 0:
-                    continue
-
-                try:
-                    decodeArray[i] += (((4 - len(decodeArray[i]) % 4)) % 4) * "="
                     if isDebug:
-                        print_log(decodeArray[i])
-                        print_log(base64.urlsafe_b64decode(decodeArray[i].encode("utf-8")).decode("utf-8"))
-                    decodeArray[i] = base64.urlsafe_b64decode(decodeArray[i].encode("utf-8")).decode("utf-8").split(":")
-                except:
+                        print_log(str(decodeArray[i]))
+                    server = decodeArray[i][0]
+
+                    try:
+                        if isDebug:
+                            print_log("server = " + server)
+                        server_port = int(decodeArray[i][1])
+                        if isDebug:
+                            print_log("server_port = " + str(server_port))
+                        password = base64.urlsafe_b64decode(decodeArray[i][5].split("/?")[0] + "=" * (
+                                (4 - (len(decodeArray[i][5].split("/?")[0]) % 4)) % 4)).decode("utf-8")
+                        if isDebug:
+                            print_log("password = " + password)
+                        method = decodeArray[i][3]
+                        if isDebug:
+                            print_log("method = " + method)
+                        protocol = decodeArray[i][2]
+                        if isDebug:
+                            print_log("protocol = " + protocol)
+
+                        if decodeArray[i][5].find("protoparam") == -1 or len(re.findall(r"protoparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])) == 0:
+                            protocol_param = ""
+                        else:
+                            protocol_param = base64.urlsafe_b64decode(
+                                re.findall(r"protoparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]).decode("utf-8")
+                        if isDebug:
+                            print_log("protocol_param = " + protocol_param)
+                        obfs = decodeArray[i][4]
+                        if isDebug:
+                            print_log("obfs = " + obfs)
+                        if decodeArray[i][5].find("obfsparam") == -1 or len(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])) == 0:
+                            obfs_param = ""
+                        else:
+                            obfs_param = base64.urlsafe_b64decode(
+                                str(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]) + "=" * ((4 - len(
+                                    str(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]))) % 4)).decode(
+                                "utf-8")
+                        if isDebug:
+                            print_log("obfs_param = " + obfs_param)
+
+                        if decodeArray[i][5].find("remarks") == -1 or len(re.findall(r"remarks=([a-zA-Z0-9\\\-.:\s]+)", decodeArray[i][5])) == 0:
+                            remarks = ""
+                        else:
+                            remarks = base64.urlsafe_b64decode(
+                                re.findall(r"remarks=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0] + "=" * (4 - len(
+                                    str(re.findall(r"remarks=([a-zA-Z0-9\\\-\.\s\_]+)", decodeArray[i][5])[0])) % 4)).decode(
+                                "utf-8")
+                        if isDebug:
+                            print_log("remarks = " + remarks)
+                        if decodeArray[i][5].find("group") == -1 or len(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])) == 0:
+                            group = ""
+                        else:
+                            group = base64.urlsafe_b64decode(
+                                str(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0]) + "=" * ((4 - (len(
+                                    str(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0])) % 4)) % 4)).decode(
+                                "utf-8")
+                        if isDebug:
+                            print_log("group = " + group)
+
+                        server = Server(server, server_port, password, method, protocol, protocol_param, obfs, obfs_param)
+                        # print(server.toJSON())
+
+                        if enable_filter:
+                            for j in range(len(keywords)):
+                                if not remarks.find(keywords[j]) == -1:
+                                    servers.append(server)
+                                    print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
+                                    loaded_counter += 1
+                                    break
+
+                            if not server in servers:
+                                print_log("Reject server \t [" + remarks + "]")
+                        else:
+                            servers.append(server)
+                            print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
+                            loaded_counter += 1
+                    except:
+                        traceback.print_exc()
+                        print_log("#" + str(i) + " server resolved failed.")
+            except Exception as e:
+                if showTraceback:
                     traceback.print_exc()
-                    continue
+                print_log("Failed fetch subscription page - " + subscribeAddress)
 
-                if isDebug:
-                    print_log(str(decodeArray[i]))
-                server = decodeArray[i][0]
-
-                try:
-                    if isDebug:
-                        print_log("server = " + server)
-                    server_port = int(decodeArray[i][1])
-                    if isDebug:
-                        print_log("server_port = " + str(server_port))
-                    password = base64.urlsafe_b64decode(decodeArray[i][5].split("/?")[0] + "=" * (
-                            (4 - (len(decodeArray[i][5].split("/?")[0]) % 4)) % 4)).decode("utf-8")
-                    if isDebug:
-                        print_log("password = " + password)
-                    method = decodeArray[i][3]
-                    if isDebug:
-                        print_log("method = " + method)
-                    protocol = decodeArray[i][2]
-                    if isDebug:
-                        print_log("protocol = " + protocol)
-
-                    if decodeArray[i][5].find("protoparam") == -1 or len(re.findall(r"protoparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])) == 0:
-                        protocol_param = ""
-                    else:
-                        protocol_param = base64.urlsafe_b64decode(
-                            re.findall(r"protoparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]).decode("utf-8")
-                    if isDebug:
-                        print_log("protocol_param = " + protocol_param)
-                    obfs = decodeArray[i][4]
-                    if isDebug:
-                        print_log("obfs = " + obfs)
-                    if decodeArray[i][5].find("obfsparam") == -1 or len(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])) == 0:
-                        obfs_param = ""
-                    else:
-                        obfs_param = base64.urlsafe_b64decode(
-                            str(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]) + "=" * ((4 - len(
-                                str(re.findall(r"obfsparam=([a-zA-Z0-9\-]+)&", decodeArray[i][5])[0]))) % 4)).decode(
-                            "utf-8")
-                    if isDebug:
-                        print_log("obfs_param = " + obfs_param)
-
-                    if decodeArray[i][5].find("remarks") == -1 or len(re.findall(r"remarks=([a-zA-Z0-9\\\-.:\s]+)", decodeArray[i][5])) == 0:
-                        remarks = ""
-                    else:
-                        remarks = base64.urlsafe_b64decode(
-                            re.findall(r"remarks=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0] + "=" * (4 - len(
-                                str(re.findall(r"remarks=([a-zA-Z0-9\\\-\.\s\_]+)", decodeArray[i][5])[0])) % 4)).decode(
-                            "utf-8")
-                    if isDebug:
-                        print_log("remarks = " + remarks)
-                    if decodeArray[i][5].find("group") == -1 or len(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])) == 0:
-                        group = ""
-                    else:
-                        group = base64.urlsafe_b64decode(
-                            str(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0]) + "=" * ((4 - (len(
-                                str(re.findall(r"group=([a-zA-Z0-9\\\-\.:\s\_]+)", decodeArray[i][5])[0])) % 4)) % 4)).decode(
-                            "utf-8")
-                    if isDebug:
-                        print_log("group = " + group)
-
-                    server = Server(server, server_port, password, method, protocol, protocol_param, obfs, obfs_param)
-                    # print(server.toJSON())
-
-                    if enable_filter:
-                        for j in range(len(keywords)):
-                            if not remarks.find(keywords[j]) == -1:
-                                servers.append(server)
-                                print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
-                                loaded_counter += 1
-                                break
-
-                        if not server in servers:
-                            print_log("Reject server \t [" + remarks + "]")
-                    else:
-                        servers.append(server)
-                        print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
-                        loaded_counter += 1
-                except:
-                    traceback.print_exc()
-                    print_log("#" + str(i) + " server resolved failed.")
-        except Exception as e:
-            traceback.print_exc()
-            print_log("Failed fetch subscribe page.")
-
-        for i in range(len(servers)):
-            file = open(config_file + str(i), "w")
-            file.write(servers[i].toJSON())
-            file.close()
+            for i in range(len(servers)):
+                file = open(subscription[k][0] + "_" + config_file + str(i), "w")
+                file.write(servers[i].toJSON())
+                file.close()
 
         print_log("Finished.")
-
         if isDebug:
             break
         time.sleep(updateInterval)
