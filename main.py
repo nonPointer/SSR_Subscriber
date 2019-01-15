@@ -16,7 +16,7 @@ import re
 # https://github.com/shadowsocksrr/shadowsocks-rss/wiki/config.json
 
 # Update Interval (seconds)
-updateInterval = 60
+updateInterval = 1800
 
 # Subscribe Address
 subscribeAddress = "https://raw.githubusercontent.com/erguotou520/electron-ssr/redesign/docs/assets/subscribe.txt"
