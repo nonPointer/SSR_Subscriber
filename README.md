@@ -2,11 +2,9 @@
 
 [English](#English) | [中文](#中文)
 
-## TODO
+TODO:
 
-+ [x] Add multi-sources subscription links
 + [ ] Test connection intervals
-+ [x] Save config files depends on keywords (e.g. `HK`, `JP`, `Netflix`, `HBO`)
 + [ ] Clean outdated config files
 
 # English
