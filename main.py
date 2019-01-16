@@ -24,6 +24,9 @@ subscription = [["test", "https://raw.githubusercontent.com/erguotou520/electron
               ["config_file_prefix1", "https://subscribe_address1"],
               ["config_file_prefix2", "https://subscribe_address2"]]
 
+# Enable config filename prefix
+enable_prefix = True
+
 # Config File
 config_file = "config.json"
 
@@ -133,6 +136,7 @@ if __name__ == "__main__":
     }
     while (True):
         loaded_counter = 0
+        saved_counter = 0
         for k in range(len(subscription)):
             try:
                 servers = []
@@ -262,7 +266,11 @@ if __name__ == "__main__":
                 print_log("Failed fetch subscription page - " + subscribeAddress)
 
             for i in range(len(servers)):
-                file = open(subscription[k][0] + "_" + config_file + str(i), "w")
+                if enable_prefix:
+                    file = open(subscription[k][0] + "_" + config_file + str(i), "w")
+                else:
+                    file = open(config_file + str(saved_counter), "w")
+                    saved_counter += 1
                 file.write(servers[i].toJSON())
                 file.close()
 
