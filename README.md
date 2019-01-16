@@ -15,8 +15,7 @@ SSR_Subscriber is a tool which based on Python3 to fetch latest configurations f
 
 * Support multi subscriptions links
 * Support keywords filter (such as save config files for those servers which remarks has a substring of `HK` or `Netflix`)
-
-
+* Support Ping validity test
 
 ## Usage
 
@@ -32,6 +31,7 @@ SSR_Subscriber 是一个基于 Python3 的小工具，用于自动从订阅服�
 
 * 支持多个订阅地址，为各订阅添加配置文件前缀
 * 支持关键词筛选，例如筛选出名称含有 `HK` 或 `Netflix` 的服务器
+* 支持基于 Ping 的有效性检测
 
 ## 使用方法
 

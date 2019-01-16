@@ -33,6 +33,10 @@ config_file = "config.json"
 # User-Agent
 userAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6"
 
+# Server Ping Test
+# WARNING: Some server administrators may disable the ICMP response, please check in advance to prevent from wrong judgement
+enable_ping = True
+
 # Keywords
 # use ',' to split
 enable_filter = False
@@ -114,6 +118,17 @@ class Server:
                           sort_keys=False, indent=4)
 
 
+def ping(host):
+    import subprocess
+
+    process = subprocess.Popen(["ping", "-n", "1",host], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    streamdata = process.communicate()[0]
+    if not 'Reply from {}'.format(host) in str(streamdata):
+        return False
+    else:
+        return True
+
+
 def print_log(content):
     print(time.strftime('%Y-%m-%d %H:%M:%S ', time.localtime(time.time())) + content)
     sys.stdout.flush()
@@ -182,11 +197,11 @@ if __name__ == "__main__":
 
                     if isDebug:
                         print_log(str(decodeArray[i]))
-                    server = decodeArray[i][0]
+                    server_addr = decodeArray[i][0]
 
                     try:
                         if isDebug:
-                            print_log("server = " + server)
+                            print_log("server = " + server_addr)
                         server_port = int(decodeArray[i][1])
                         if isDebug:
                             print_log("server_port = " + str(server_port))
@@ -240,23 +255,29 @@ if __name__ == "__main__":
                         if isDebug:
                             print_log("group = " + group)
 
-                        server = Server(server, server_port, password, method, protocol, protocol_param, obfs, obfs_param)
+                        server = Server(server_addr, server_port, password, method, protocol, protocol_param, obfs, obfs_param)
                         # print(server.toJSON())
 
                         if enable_filter:
                             for j in range(len(keywords)):
                                 if not remarks.find(keywords[j]) == -1:
-                                    servers.append(server)
-                                    print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
-                                    loaded_counter += 1
+                                    if enable_ping and not ping(server_addr):
+                                        print_log("Aborted server \t [" + remarks + "]")
+                                    else:
+                                        servers.append(server)
+                                        print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
+                                        loaded_counter += 1
                                     break
 
                             if not server in servers:
                                 print_log("Reject server \t [" + remarks + "]")
                         else:
-                            servers.append(server)
-                            print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
-                            loaded_counter += 1
+                            if enable_ping and not ping(server_addr):
+                                print_log("Aborted server \t [" + remarks + "]")
+                            else:
+                                servers.append(server)
+                                print_log("Loaded server #" + str(loaded_counter) + "\t [" + remarks + "]")
+                                loaded_counter += 1
                     except:
                         traceback.print_exc()
                         print_log("#" + str(i) + " server resolved failed.")
