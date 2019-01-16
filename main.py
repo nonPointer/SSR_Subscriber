@@ -35,7 +35,7 @@ userAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/2
 
 # Server Ping Test
 # WARNING: Some server administrators may disable the ICMP response, please check in advance to prevent from wrong judgement
-enable_ping = True
+enable_ping = False
 
 # Keywords
 # use ',' to split
