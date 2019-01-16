@@ -7,6 +7,7 @@ import sys
 import traceback
 import json
 import re
+import os
 
 ################
 #    CONFIG    #
@@ -36,6 +37,16 @@ userAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/2
 # Server Ping Test
 # WARNING: Some server administrators may disable the ICMP response, please check in advance to prevent from wrong judgement
 enable_ping = False
+
+# Enable remove outdated config files
+# WARNING: DO SAFE CHECK BEFORE ENABLE THIS FEATURE
+enable_sweeper = False
+
+# set "." to be current directory
+sweeper_dir = "."
+
+# Sweeper Regex
+sweeper_regex = ".*config.json[0-9]+"
 
 # Keywords
 # use ',' to split
@@ -118,6 +129,12 @@ class Server:
                           sort_keys=False, indent=4)
 
 
+def sweeper(dir, pattern):
+    for f in os.listdir(dir):
+        if re.search(pattern, f):
+            os.remove(os.path.join(dir, f))
+
+
 def ping(host):
     import subprocess
 
@@ -150,6 +167,9 @@ if __name__ == "__main__":
         "User-Agent": userAgent
     }
     while (True):
+        if enable_sweeper:
+            sweeper(sweeper_dir, sweeper_regex)
+            print_log("Removed outdated config files.")
         loaded_counter = 0
         saved_counter = 0
         for k in range(len(subscription)):
